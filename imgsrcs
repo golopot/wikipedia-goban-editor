@@ -1,0 +1,81 @@
+|b1|w2|b3|w4|b5|w6|b7|w8|b9|10|
+|11|12|13|14|15|16|17|18|19|20|
+|21|22|23|24|25|26|27|28|29|30|
+|  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |  |
+
+stt= ''; $('td a img').map( function(a,b){return $(b).attr('src')}).map((a,b)=>stt+=b+'\n');
+stt=stt.replace(/.*thumb\/(.*)\.svg.*\/.*/g, '$1')
+console.log(stt)
+
+(.)/(..)/Go_(..)
+'$3':'Go_$3;$1/$2',
+
+3/32/Go_board_diagram_image.svg
+4/44/Go_b1.svg
+3/3f/Go_w2.svg
+4/44/Go_b3.svg
+2/2d/Go_w4.svg
+a/a9/Go_b5.svg
+5/52/Go_w6.svg
+1/1d/Go_b7.svg
+a/ab/Go_w8.svg
+5/51/Go_b9.svg
+2/21/Go_10.svg
+e/eb/Go_11.svg
+3/33/Go_12.svg
+5/59/Go_13.svg
+f/f7/Go_14.svg
+0/02/Go_15.svg
+3/3f/Go_16.svg
+6/6a/Go_17.svg
+8/89/Go_18.svg
+7/78/Go_19.svg
+3/3c/Go_20.svg
+1/18/Go_21.svg
+b/be/Go_22.svg
+7/78/Go_23.svg
+a/a9/Go_24.svg
+9/91/Go_25.svg
+9/9e/Go_26.svg
+6/6f/Go_27.svg
+b/b5/Go_28.svg
+f/fa/Go_29.svg
+c/cb/Go_30.svg
+9/9a/Go_31
+9/9f/Go_32
+0/01/Go_33
+b/ba/Go_34
+b/b3/Go_35
+7/77/Go_36
+f/f7/Go_37
+3/31/Go_38
+f/f8/Go_39
+1/17/Go_40
+e/e7/Go_41
+0/04/Go_42
+5/59/Go_43
+d/da/Go_44
+3/3c/Go_45
+d/d3/Go_46
+3/30/Go_47
+5/53/Go_48
+7/7a/Go_49
+a/a1/Go_50
+0/00/Go_51
+c/c4/Go_52
+b/bd/Go_53
+7/7c/Go_54
+7/7f/Go_55
+e/e9/Go_56
+1/1a/Go_57
+6/6b/Go_58
+b/b4/Go_59
+e/ef/Go_60
+

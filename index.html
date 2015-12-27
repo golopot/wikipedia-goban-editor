@@ -1,0 +1,410 @@
+<html>
+<head>
+<style>
+#goban tr{
+	vertical-align:top;
+	border:none;
+}
+#goban td{
+	padding:0;
+}
+
+#banner{
+	font-family: monospace;
+	line-height: 1em;
+}
+#banner span{
+	white-space: pre;
+}
+#panel{
+	font-family: monospace;
+	margin-bottom: 10px;
+}
+#panel span:hover{
+	color:purple;
+}
+#panel span:active{
+	color:blue;
+}
+#email:hover:before{
+	content:"q4w5566 at gmail ";	
+}
+
+.flex-container{
+	display: -webkit-box;
+	display: -moz-box;
+	display: -ms-flexbox;
+	display: -moz-flex;
+	display: -webkit-flex;
+	display: flex;
+	-webkit-justify-content: space-between; 
+	justify-content: space-between; 
+}
+
+.noselect{
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+a{
+	color:black;
+	text-decoration: none;
+}
+hr{
+
+}
+</style>
+</head>
+<body>
+<div id='banner' class='flex-container'>
+	<div>wikipedia goban editor</div>
+	
+	<div class='flex-container'>
+	<div id='email'>email </div>
+	<div style="width:1em"></div>
+	<div><a href='https://github.com/q4w56'>github</a></div>
+	</div>
+</div>
+<hr>
+<div ng-app="myApp" ng-controller="myCtrl">
+<div id='panel' class='noselect'>
+
+<div>
+	<span>Boardsize:</span>
+	<span ng-click='ev_changeBds(11)'>#11</span>
+	<span ng-click='ev_changeBds(19)'>#19</span>
+</div>
+<div>
+	<span>Borders:</span>
+	<span ng-click='ev_borderline("u")'>#top</span>
+	<span ng-click='ev_borderline("d")'>#bottom</span>
+	<span ng-click='ev_borderline("l")'>#left</span>
+	<span ng-click='ev_borderline("r")'>#right</span>
+</div>
+
+<div>
+	<span>Actions: </span>
+	<span ng-click='mode="b"'>#black</span>
+	<span ng-click='mode="w"'>#white</span>
+	<span ng-click='mode=""'>#alternate</span>
+	<span ng-click='mode="x"'>#hoshi</span>
+	<span ng-click='ev_undo()'>#undo</span>
+	<span ng-click='ev_clear()'>#clear</span>
+	<span ng-click='ev_denumerize()'>#remove_numbers</span>
+	</div>
+</div>
+
+<div id='goban' class='noselect'>
+	<table style="border:0;border-collapse:collapse;padding:0">
+	<tbody>
+	<tr ng-repeat='i in range(bdsize)'>
+	<td ng-repeat='j in range(bdsize)'>
+	<!-- {{img_resolve(goban[bdsize*i+j], imgsize)}} -->
+	<img alt="+" ng-init='x=bdsize*i+j'ng-src='{{img_resolve(goban[bdsize*i+j], imgsize)}}' ng-click='ev_stoneClick(bdsize*i+j)'>
+	</td>
+	</tr>
+	</tbody>
+	</table>
+</div>
+
+
+<div style='height:10px'></div>
+
+<div id='wikicode' style='white-space: pre-wrap;font-family: monospace'>
+{{wikicode}}
+</div>
+
+
+
+
+
+<!-- for debug -->
+<!-- <div style='height:20px'></div> -->
+<!-- <table>
+<tbody>
+<tr ng-repeat='i in range(bdsize)'>
+<td ng-repeat='j in range(bdsize)'>
+{{goban[bdsize*i+j]}}
+<img alt="+" ng-init='x=bdsize*i+j'ng-src='{{img_resolve(goban[bdsize*i+j], imgsize)}}' ng-click='ev_stoneClick(bdsize*i+j)'>
+</td>
+</tr>
+</tbody>
+</table>
+ -->
+
+
+
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js'></script>
+<script src='lodash.js'></script>
+<script>
+
+
+var app = angular.module('myApp', []);
+
+app.factory('createGoban', function(){
+	return{
+		create:function(bdsize){
+			var goban = new Array(bdsize*bdsize);
+			for (var i=0; i<bdsize*bdsize; i++)
+			{
+				goban[i]= '+';
+			}
+			return goban;
+		},
+	}
+});
+app.factory('_', function(){
+	return{
+		range:function(n){return _.range(n)}
+	}
+});
+
+
+
+
+app.controller('myCtrl', function($scope, createGoban) {
+	window.myscope = $scope; 
+	$scope.testvar =''
+	$scope.mode = '';
+	$scope.bdsize =11
+	$scope.imgsize=17
+	$scope.goban = createGoban.create($scope.bdsize)
+	$scope.udlr={'u':0, 'd':1, 'l':1, 'r':0}
+	$scope.moves_hist=['14:x:','20:x:','80:x:','86:x:']
+	$scope.mvnum=1
+	$scope.wikicode=''
+	$scope.range = function(n)
+	{
+		return _.range(n)
+	}
+
+	$scope.draw_empty_goban = function(){
+		var bds = $scope.bdsize
+		var goban = new Array(bds*bds);
+		//draw the borders lines
+		
+		var u = _.range(bds)
+		var d = _.range(bds*bds-bds, bds*bds)
+		var l = u.map(a=>a*bds)
+		var r = l.map(a=>a+bds-1)
+		var udlr= $scope.udlr
+		for (var i=0; i<bds*bds; i++)
+			goban[i]= '';
+		if (udlr['u'])
+			u.forEach( a=>goban[a]+='u')
+		if (udlr['d'])
+			d.forEach( a=>goban[a]+='d')
+		if (udlr['l'])
+			l.forEach( a=>goban[a]+='l')
+		if (udlr['r'])
+			r.forEach( a=>goban[a]+='r')
+
+		goban.forEach(function(v,i){if(v=='')goban[i]='+'})
+
+		$scope.goban = goban
+	}
+
+	$scope.put_stones_on_goban =function()
+	{
+		var goban = $scope.goban
+		var hist = $scope.moves_hist
+		for (var i=0; i<hist.length; i++)
+		{
+			var q = hist[i].split(":")
+			goban[+q[0]] = (q[1]+q[2]).slice(-2)
+		}
+	}
+	$scope.generate_wikicode = function()
+	{
+
+		var bds = $scope.bdsize
+		var template = ''
+		var middle_part = ''
+		for(var i=0; i<bds*bds; i++)
+		{
+		  middle_part += '|'+('00'+i).slice(-3);
+		  if(i%bds==bds-1) middle_part+='\n'
+		}
+		template ='{{Goban bdsxbds\n'.replace(/bds/g, bds)
+		template += middle_part
+		template += '|$imgsize|u=$u|d=$d|l=$l|r=$r}}'
+
+		var out = template
+		var spaceFill = (str)=> ('  '+ str).slice(-2);
+		var censor = a=> a.search(/[udlr\+]/)!=-1? '':a
+		var foo1,foo2
+		for(var i=0; i<bds*bds; i++)
+		{
+			foo1 = ('00'+i).slice(-3)
+			foo2 = spaceFill(censor($scope.goban[i]))
+			out = out.replace( foo1, foo2)
+		}
+		out = out.replace('$imgsize', $scope.imgsize)
+		var udlr = $scope.udlr
+		out = out.replace('$u', udlr['u']? 'u':' ')
+		out = out.replace('$d', udlr['d']? 'd':' ')
+		out = out.replace('$l', udlr['l']? 'l':' ')
+		out = out.replace('$r', udlr['r']? 'r':' ')
+
+
+		$scope.wikicode = out
+	}
+
+	$scope.ev_borderline = function(arg)
+	{
+		$scope.udlr[arg] = +!$scope.udlr[arg]
+		$scope.draw_empty_goban()
+		$scope.put_stones_on_goban()
+		$scope.generate_wikicode()
+	}
+	$scope.ev_undo = function()
+	{
+		var move = $scope.moves_hist.pop()
+		if (move&&move.split(':')[2]!='') $scope.mvnum += -1
+		$scope.draw_empty_goban()
+		$scope.put_stones_on_goban()
+		$scope.generate_wikicode()
+	}
+	$scope.ev_clear = function()
+	{
+		$scope.moves_hist=[]
+		$scope.mvnum = 1
+		$scope.draw_empty_goban()
+		$scope.put_stones_on_goban()
+		$scope.generate_wikicode()
+
+	}
+	$scope.ev_denumerize = function()
+	{
+		$scope.moves_hist.forEach( function(v,i){
+			var nts = v.split(':')
+			$scope.moves_hist[i] = [ nts[0], nts[1],''].join(":")
+		})
+		$scope.mvnum = 1
+		$scope.put_stones_on_goban()
+		$scope.generate_wikicode()
+	}
+	$scope.ev_stoneClick = function(c){
+		var mode = $scope.mode 
+		if (mode=='')
+		{
+			var bw = $scope.mvnum%2?'b':'w'
+			var mn = $scope.mvnum	
+		}
+		else
+		{
+			var bw = mode
+			var mn = ''	
+		}
+		$scope.moves_hist.push([c,bw,mn].join(':'))
+		$scope.mvnum += mode?0:1
+		$scope.put_stones_on_goban()
+		$scope.generate_wikicode()
+	}
+	$scope.ev_changeBds = function(a){
+		$scope.bdsize = a
+		$scope.moves_hist=[]
+		$scope.mvnum = 1
+		$scope.draw_empty_goban()
+		$scope.put_stones_on_goban()
+		$scope.generate_wikicode()
+	}
+	$scope.img_resolve = function(stonecode,imgsize){
+		var imgtmp ='http://upload.wikimedia.org/wikipedia/commons/thumb/@1/@2.svg/@3px-@2.svg.png'
+		var book= {
+			'x':'Go_-;9/99',
+			'b':'Go_b;5/50',
+			'w':'Go_w;f/f7',
+			'+':'Go_board_diagram_image;3/32',
+			'u':'Go_u;3/36',
+			'd':'Go_d;c/c0',
+			'l':'Go_l;7/79',
+			'r':'Go_r;a/aa',
+			'ul':'Go_ul;e/ed',
+			'ur':'Go_ur;e/ed',
+			'dl':'Go_dl;1/1c',
+			'dr':'Go_dr;8/88',
+			'b1':'Go_b1;4/44',
+			'w2':'Go_w2;3/3f',
+			'b3':'Go_b3;4/44',
+			'w4':'Go_w4;2/2d',
+			'b5':'Go_b5;a/a9',
+			'w6':'Go_w6;5/52',
+			'b7':'Go_b7;1/1d',
+			'w8':'Go_w8;a/ab',
+			'b9':'Go_b9;5/51',
+			'10':'Go_10;2/21',
+			'11':'Go_11;e/eb',
+			'12':'Go_12;3/33',
+			'13':'Go_13;5/59',
+			'14':'Go_14;f/f7',
+			'15':'Go_15;0/02',
+			'16':'Go_16;3/3f',
+			'17':'Go_17;6/6a',
+			'18':'Go_18;8/89',
+			'19':'Go_19;7/78',
+			'20':'Go_20;3/3c',
+			'21':'Go_21;1/18',
+			'22':'Go_22;b/be',
+			'23':'Go_23;7/78',
+			'24':'Go_24;a/a9',
+			'25':'Go_25;9/91',
+			'26':'Go_26;9/9e',
+			'27':'Go_27;6/6f',
+			'28':'Go_28;b/b5',
+			'29':'Go_29;f/fa',
+			'30':'Go_30;c/cb',
+			'31':'Go_31;9/9a',
+			'32':'Go_32;9/9f',
+			'33':'Go_33;0/01',
+			'34':'Go_34;b/ba',
+			'35':'Go_35;b/b3',
+			'36':'Go_36;7/77',
+			'37':'Go_37;f/f7',
+			'38':'Go_38;3/31',
+			'39':'Go_39;f/f8',
+			'40':'Go_40;1/17',
+			'41':'Go_41;e/e7',
+			'42':'Go_42;0/04',
+			'43':'Go_43;5/59',
+			'44':'Go_44;d/da',
+			'45':'Go_45;3/3c',
+			'46':'Go_46;d/d3',
+			'47':'Go_47;3/30',
+			'48':'Go_48;5/53',
+			'49':'Go_49;7/7a',
+			'50':'Go_50;a/a1',
+			'51':'Go_51;0/00',
+			'52':'Go_52;c/c4',
+			'53':'Go_53;b/bd',
+			'54':'Go_54;7/7c',
+			'55':'Go_55;7/7f',
+			'56':'Go_56;e/e9',
+			'57':'Go_57;1/1a',
+			'58':'Go_58;6/6b',
+			'59':'Go_59;b/b4',
+			'60':'Go_60;e/ef',
+		};
+		try
+		{
+			var filename = book[stonecode].split(';')[0];
+			var nonsense = book[stonecode].split(';')[1];
+		}catch(e)
+		{
+			console.log('error: piececode error')
+		}
+		return imgtmp.replace('@1',nonsense).replace(/@2/g,filename).replace('@3',imgsize);
+	}
+
+	$scope.draw_empty_goban()
+	$scope.put_stones_on_goban()
+	$scope.generate_wikicode()
+})
+
+</script>
+
+</body>
+</html>
